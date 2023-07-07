@@ -1,1 +1,7 @@
 config.py
+venv
+__pycache__
+settings.json
+.vscode
+.DS_Store
+

@@ -1,44 +1,45 @@
-from os import getenv
+import asyncio
+import sys
 
-import openai
-from prompt_toolkit import prompt
+from langchain.chains import LLMChain
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import PromptTemplate
 
 import config
 
-# Set up OpenAI API credentials
-openai.api_key = config.API_KEY
-# Define the chat function using chat completions
-def chat(messages):
-  try:
-    response = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages= messages,
-  )
 
-  except:
-    print("Error:", "I'm sorry, there was an error. Please try again later.")
-    return {"content": "I'm sorry, there was an error. Please try again later."}
-  return response["choices"][0]["message"]
+async def chatbot():
+    print("Hello! I'm a chat bot powered by ChatGPT. How can I help you today?")
+    memory = ConversationBufferMemory(ai_prefix="Assistant")
+    prompt_template = PromptTemplate(
+        template="""You are a helpful assistant that helps with any and all questions to the best of your ability.You may be given some chat history from a previous conversation.
+        {history}
+        Human:{input}
+        Assistant:""",
+        input_variables=["history", "input"],
+    )
+    llm_chain = LLMChain(
+        llm=ChatOpenAI(
+            temperature=0,
+            openai_api_key=config.API_KEY,
+            client="hello",
+            model="gpt-3.5-turbo",
+        ),
+        prompt=prompt_template,
+        memory=memory,
+    )
 
-
-# Define the chat bot function
-def chatbot():
-    print("Hello! I'm a chat bot. How can I help you today?")
-    messages = [
-      {
-        "role": "system",
-        "content": "You are a helpful chat bot"
-      }
-    ]
     while True:
-        message = prompt("You: ")
-        if message.lower() == "exit":
-            break
-        messages.append({"role": "user", "content": message})
-        response = chat(messages)
-        messages.append({"role": "assistant", "content": response["content"]})
-        print("Assistant:", response["content"])
+        try:
+            response = await llm_chain.arun(input=input("You: "))
+            print(f"Assistant: {response}")
+        except KeyboardInterrupt:
+            print("Goodbye")
+            sys.exit(0)
+        except Exception as err:
+            sys.exit(f"{err=}")
 
-# # Run the chat bot
 
-chatbot()
+if __name__ == "__main__":
+    asyncio.run(chatbot())
