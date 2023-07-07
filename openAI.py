@@ -11,7 +11,7 @@ import config
 
 
 async def chatbot() -> None:
-    print("Hello! I'm a chat bot powered by ChatGPT. How can I help you today?")
+    print("Hello! I'm a chatbot powered by ChatGPT. How can I help you today?")
     memory = ConversationBufferMemory(ai_prefix="Assistant")
     prompt_template = PromptTemplate(
         template="""You are a helpful assistant that helps with any and all questions to the best of your ability.You may be given some chat history from a previous conversation.
@@ -34,15 +34,14 @@ async def chatbot() -> None:
     )
 
     while True:
-        try:
-            response = await llm_chain.arun(input=input("You: "))
-            print(f"Assistant: {response}")
-        except KeyboardInterrupt:
-            print("Goodbye")
-            sys.exit(0)
-        except Exception as err:
-            sys.exit(f"{err=}")
+        await llm_chain.arun(input=input("\nYou: "))
 
 
 if __name__ == "__main__":
-    asyncio.run(chatbot())
+    try:
+        asyncio.run(chatbot())
+    except (KeyboardInterrupt, EOFError):
+        print("Goodbye!")
+        sys.exit()
+    except Exception as err:
+        sys.exit(f"Error has occured {err=}")
