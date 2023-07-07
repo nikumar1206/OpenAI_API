@@ -1,6 +1,7 @@
 import asyncio
 import sys
 
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
@@ -9,7 +10,7 @@ from langchain.prompts import PromptTemplate
 import config
 
 
-async def chatbot():
+async def chatbot() -> None:
     print("Hello! I'm a chat bot powered by ChatGPT. How can I help you today?")
     memory = ConversationBufferMemory(ai_prefix="Assistant")
     prompt_template = PromptTemplate(
@@ -25,6 +26,8 @@ async def chatbot():
             openai_api_key=config.API_KEY,
             client="hello",
             model="gpt-3.5-turbo",
+            streaming=True,
+            callbacks=[StreamingStdOutCallbackHandler()],
         ),
         prompt=prompt_template,
         memory=memory,
